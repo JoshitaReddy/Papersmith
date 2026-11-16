@@ -4,7 +4,7 @@ A grumpy old papersmith folds scraps into boats, darts and shields to win back h
 
 ## G1 Concept submission
 
-- **Recording (3–5 min):** [Watch the pitch](https://drive.google.com/drive/folders/15_fXkDJiS8ulfkgFg4JB_0-GhX-j6X_4?usp=sharing) (Columbia LionMail login required)
+- **Recording (3–5 min):** [Watch the pitch](https://drive.google.com/file/d/1CogubRN51dZXgGLbb_Q8LNvkhSAFg-Q1/view?usp=sharing) (Columbia LionMail login required)
 - **Deck:** [Deck.pdf](https://github.com/JoshitaReddy/Papersmith/blob/main/Deck.pdf)
 - **Initial GDD:** [Game Design Document.pdf](https://github.com/JoshitaReddy/Papersmith/blob/main/Game%20Design%20Document.pdf)
 - **Initial Configuration Document:** [CONFIGURATION.md](https://github.com/JoshitaReddy/Papersmith/blob/main/CONFIGURATION.md)
