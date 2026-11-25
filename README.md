@@ -1,62 +1,40 @@
 # Papersmith of the Crinkled Kingdom
 
-G2/G3 browser-game vertical slice for a top-down paper puzzle-adventure. Fold and pack a limited satchel, cross the Paper Woods, respond to an adaptive Commander, find the optional clue, and defeat the Moth Queen.
+A top-down paper puzzle-adventure for the browser. Learn new folds by folding them, pack and order your satchel, work through the Paper Woods level by level, adapt to a boss Commander that counters your favorite crafts, and defeat the Moth Queen.
 
-## Quick Start
+## Status: Restarting the Vertical Slice (2026-11-25)
 
-Requires Node.js 24 or newer.
+The first G2/G3 checkpoint build was removed because it did not match the owner's vision (see `logs/2026-11-25-checkpoint-removed.md`). The vertical slice is being rebuilt in **Phaser + TypeScript** from the approved design brief:
 
-```bash
-npm install
-npm run dev
-```
+- Brief (revision 3, approved): `agent-team/design/2026-11-25-vertical-slice-brief.md`
+- Asset list: `agent-team/design/2026-11-25-vertical-slice-brief-assets.md`
+- Handoff to Tech Lead: `agent-team/handoffs/2026-11-25-design-to-tech-lead.md`
+- Tracking: [GitHub project board](https://github.com/users/JoshitaReddy/projects/1) and milestone *G2/G3 — Stage 1 vertical slice* (due 2026-11-28)
 
-Open `http://127.0.0.1:4173`.
+**There is no runnable build yet.** Run and test instructions will be added here when the Phaser project lands.
 
-The game uses Three.js/WebGL when available and automatically switches to a Canvas 2D compatibility renderer when WebGL is disabled or unavailable.
-
-## Controls
+## Planned Controls
 
 - WASD or arrow keys: move
-- Space or E: nearby contextual action, such as opening a workbench or launching the Boat
-- Z: strike with the ruler
-- X: use the selected packed craft
-- 1-3 or click: select a satchel slot
-- Q, Tab, or Enter: cycle slots
-- T: inspect and download telemetry
-- R: return to the latest checkpoint
+- Space or E: the action shown on screen (open workbench, launch boat, hop, take, use the selected fold)
+- X: attack with the ruler
+- Tab: switch folds, in the order you packed them
+- Mouse (packing and folding screens only): drag folds into the satchel, reorder them, and fold paper; arrows + Space also work there
 
-## Checkpoint Demonstrations
+## Commander Endpoint Safety
 
-- Normal local fallback: run the game without `VITE_COMMANDER_ENDPOINT`.
-- Forced two-second timeout: open `http://127.0.0.1:4173/?forceTimeout=1` and cross into the Woods.
-- Live Commander: copy `.env.example` to `.env.local` and set `VITE_COMMANDER_ENDPOINT` to an HTTPS service that accepts `CommanderContext` JSON and returns one valid `CommanderAction` JSON object.
-
-Do not put a Gemini key in a `VITE_*` variable. Vite variables are shipped to the browser; credentials belong behind the configured server endpoint.
-
-## Verification
-
-```bash
-npm run typecheck
-npm test
-npm run build
-npm run test:e2e
-```
-
-Playwright evidence is written under `tests/artifacts/`. CI runs type checking, unit tests, a production build, browser tests, and uploads browser evidence.
+The boss Commander can call a deployed Gemini endpoint configured through `VITE_COMMANDER_ENDPOINT` (see `.env.example`). Do not put a Gemini key in a `VITE_*` variable: Vite variables are shipped to the browser; credentials belong behind the server endpoint.
 
 ## Repository Map
 
-- `src/`: Three.js game, Commander contract, validation, fallback, and telemetry
-- `tests/unit/`: deterministic rules and evaluation cases
-- `tests/e2e/`: independent browser checks
-- `agent-team/`: coverage map, tailored Art/Design, Tech Lead, QA, and PM roles, origin notes, and handoffs
-- `Game Design Document.md`: living design and dated gate changes
+- `Game Design Document.md`: living design; dated changes since G1 at the top
 - `CONFIGURATION.md`: Commander and production-agent configuration
-- `PROJECT_PLAN.md`: gate dates and production tasks
+- `PROJECT_PLAN.md`: gate dates, tasks, and dated status updates
+- `agents/commander/`: the in-game Commander's prompt, schema, taunts, and manifest
+- `agent-team/`: production roles (Tech Lead, QA, Art / Design Lead, Producer / PM), design briefs, handoffs, and the post-commit sync log
+- `tests/`: QA evidence; the existing suites targeted the removed build and are kept as history
+- `logs/`: decision logs and session logs
 
-## Current Scope
+## Workflow
 
-Implemented for G2/G3: Stage 1 traversal and combat loop, three crafts plus the ruler, two minions, Moth Queen, Commander interface and fallback, telemetry, deterministic evaluation, and the Tech Lead-to-QA handoff.
-
-Still external/manual: connect a deployed Gemini endpoint, measure live latency and cost, complete an external playtest, add the owner's final handoff decision, move this work into the course-provided final repository, and post that repository link with the recording.
+Tech work happens on `tech/<task>` branches, design on `design/<task>`, production tracking on `production/<task>`. Nobody pushes or merges to `main` directly; the project owner approves design, scope, gates, and merges. After every commit, the Producer / PM updates the board and all affected documentation (`agent-team/agents/pm.md`).
