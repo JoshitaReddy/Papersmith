@@ -1,0 +1,15 @@
+{
+  "name": "Papersmith Stage Commander",
+  "version": "commander-v0.2",
+  "purpose": "Choose one bounded Paper Woods wave or Moth Queen move that encourages adaptation while preserving a fair, winnable fight.",
+  "model": "gemini-3.5-flash-lite",
+  "interface": "POST CommanderContext JSON and return one CommanderAction JSON object",
+  "context_sources": ["player_profile", "recent_log", "budget", "allowed_actions", "goal"],
+  "prompt": "prompt.md",
+  "schema": "schema.json",
+  "taunts": "taunts.json",
+  "timeout_ms": 2000,
+  "retries": 0,
+  "validator": "src/commander.ts#validateCommanderAction",
+  "fallback": "src/commander.ts#scriptedFallback"
+}

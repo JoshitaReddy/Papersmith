@@ -1,0 +1,5 @@
+interface:
+  display_name: "Art / Design Lead"
+  short_description: "Shape Papersmith art and interaction design"
+  brand_color: "#7A3530"
+  default_prompt: "Use $art-design-lead to turn playtest evidence into an approved Papersmith visual or interaction design brief."

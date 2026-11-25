@@ -1,14 +1,23 @@
 # Papersmith of the Crinkled Kingdom
 
-**Initial Configuration Document · Version 0.1 (G1, Nov 15, 2026)**
+**Living Configuration Document · Version 0.2 (G2/G3 checkpoint, Nov 23, 2026)**
 
 This document describes the in-game agent (the commander) and the agent team that builds the game.
 
-> **Status labels:** everything in this Initial version is **[Planned]** unless marked. **[Open]** marks an unresolved question. **[Implemented]** and **[Verified]** will be added at G2/G3 as features are built and tested.
+## Changes Since G1 - November 23, 2026
+
+- Implemented the summary-only Commander context, validator, two-second timeout interface, scripted wave and boss fallback, and browser telemetry.
+- Added cumulative counter counts per craft and evaluation case 9 for two-craft alternation.
+- Added the manifest, prompt, JSON schema, taunt list, deterministic tests, Playwright checks, and CI workflow.
+- Added an evidence-based Art / Design Lead after the WebGL blank-screen and control-clarity revisions; its first intended chain is Art / Design Lead to Tech Lead to independent QA.
+- Added an evidence-based Producer / PM to maintain milestones, risks, weekly PPP, evidence links, and the living handoff without making owner decisions.
+- Live Gemini deployment, latency/cost measurement, and live-model trials remain open; the playable checkpoint uses the scripted fallback when no endpoint is configured.
+
+> **Status labels:** **[Implemented]** exists in the playable build. **[Verified]** has automated evidence. **[Open]** still needs external input or measurement.
 
 ---
 
-## 1. In-game agent: the Commander [Planned]
+## 1. In-game agent: the Commander [Implemented]
 
 **Purpose:** choose each minion wave and each boss move for the current region's boss (Moth Queen, the Heap, Smog Mother), pushing the player to try different crafts while keeping every fight fair and winnable.
 
@@ -35,13 +44,13 @@ Every rule is enforced by the validator in code, not just by the prompt.
 
 ---
 
-## 2. Context and memory [Planned]
+## 2. Context and memory [Implemented] [Verified]
 
 **Boundary between world state and agent knowledge:** the game holds the full world state (positions, level layout, every craft's durability, enemy states). The commander sees only a summary built by the context builder. It never sees raw positions, the level layout or earlier stages.
 
 **Named context sources** (sent each call, about 500 tokens):
 
-- `player_profile`: favorite craft and its share, crafts never used, counter success rates, hearts, sheets left, hearts lost last wave
+- `player_profile`: favorite craft and its share, crafts never used, cumulative counter count and counter success rate for each craft across the stage, hearts, sheets left, hearts lost last wave
 - `recent_log`: the last 3 encounters, one line each
 - `budget`: energy, regeneration rate, cooldowns, pending warning
 - `allowed_actions`: this boss's minions, spawn points, moves with energy costs, maximum wave points
@@ -53,7 +62,7 @@ Every rule is enforced by the validator in code, not just by the prompt.
 
 ---
 
-## 3. Model, prompt and settings [Planned]
+## 3. Model, prompt and settings [Implemented Locally] [Open: Live Endpoint]
 
 | Setting | Value |
 |---|---|
@@ -64,7 +73,7 @@ Every rule is enforced by the validator in code, not just by the prompt.
 | Timeout | 2 s per call |
 | Retries | 0 in game (fallback instead); 1 in offline evaluation |
 | Spending limits | $0.05 per session, $5 per day; over the limit, the scripted fallback runs |
-| Config version | Logged with every call (`commander-v0.1`) |
+| Config version | `commander-v0.2` |
 
 **System prompt (summary):** "You are the commander for {boss} in a paper-folding adventure. Read the player summary. Choose ONE action from allowed_actions that pushes the player to try a different craft. Never break the fair-play rules. Reply only with JSON matching the schema, including a one-line read explaining your choice and a taunt_id from the taunt list." The full prompt lives at `agents/commander/prompt.md`.
 
@@ -74,7 +83,7 @@ Every rule is enforced by the validator in code, not just by the prompt.
 
 ---
 
-## 4. Failure modes and evaluation cases [Planned]
+## 4. Failure modes and evaluation cases [Implemented] [Verified Locally]
 
 **Named failure modes:**
 
@@ -96,21 +105,22 @@ Every rule is enforced by the validator in code, not just by the prompt.
 | 6 | Model returns invalid JSON | Validator rejects; fallback runs; event logged |
 | 7 | Call exceeds 2 s | Fallback runs; event logged |
 | 8 | Player uses a new craft | Commander's read mentions the change |
+| 9 | Player alternates between two crafts across the stage | Cumulative per-craft counter counts preserve both patterns; the commander responds to the repeated dependencies without treating each switch as a reset or violating the variety cap |
 
 **Deterministic tests (run on every PR):** rule invariants, a valid winning path for each stage with the scripted pattern, rejection of invalid actions (cases 3–7 with mocked model output), and one regression test per fixed bug.
 
-**Live-model trials:** a small suite of cases 1–8 whenever the model, prompt or rules change, and a fuller run before each gate. Each run records the model, config version, outcomes, latency, cost, and any failed or unavailable calls, within a capped number of trials.
+**Live-model trials:** a small suite of cases 1–9 whenever the model, prompt or rules change, and a fuller run before each gate. Each run records the model, config version, outcomes, latency, cost, and any failed or unavailable calls, within a capped number of trials.
 
 ---
 
-## 5. Logging and human override [Planned]
+## 5. Logging and human override [Implemented Locally]
 
-- **Logging:** each session writes a JSONL log to `logs/` with every context sent, choice returned, validator result, latency, token count and fallback event. No personal data is logged.
-- **Human override points:** a config flag `COMMANDER_MODE=agent|scripted` switches the whole game to the scripted baseline (also used for playtest comparisons). A debug key forces the fallback mid-session. Any change to the prompt, schema or rules needs my approval on a pull request.
+- **Logging:** the browser records craft use, counters, post-counter actions, Commander choices, fallback events and deaths in local storage. Pressing `T` exposes the debug panel and downloads the session as JSONL. No personal data is logged.
+- **Human override points:** leaving `VITE_COMMANDER_ENDPOINT` unset runs the scripted baseline. The `?forceTimeout=1` checkpoint route forces the two-second fallback path. Any change to the prompt, schema or rules needs my approval on a pull request.
 
 ---
 
-## 6. Executable artifacts, test command and CI [Planned]
+## 6. Executable artifacts, test command and CI [Implemented] [Verified]
 
 | Artifact | Location |
 |---|---|
@@ -118,25 +128,24 @@ Every rule is enforced by the validator in code, not just by the prompt.
 | System prompt | `agents/commander/prompt.md` |
 | Output schema | `agents/commander/schema.json` |
 | Taunt list | `agents/commander/taunts.json` |
-| Config version | `commander-v0.1`, logged with every call |
+| Config version | `commander-v0.2` |
 | Session logs | `logs/` |
 | Test command | `npm test` |
 | CI workflow | `.github/workflows/ci.yml` (runs all deterministic tests on every pull request; passing checks are required to merge) |
 
 ---
 
-## 7. Agent team role coverage (planned)
+## 7. Agent team role coverage [Implemented]
 
-I hold the Executive Producer, Creative Director, Design Lead and Tech Lead roles, and approve all agent output; the instructor is the gate approver. Roles are adapted from Chandler's *The Game Production Toolbox*, sections 2.2 and 2.3. Working roles are shown at G2/G3.
+I hold the Executive Producer and Creative Director roles and approve all agent output; the instructor is the gate approver. Roles are adapted from Chandler's *The Game Production Toolbox*, sections 2.2 and 2.3.
 
 | Role | Executable artifact | Purpose | Context | Tools and permissions | Outputs and handoff | Evaluation | My approval |
 |---|---|---|---|---|---|---|---|
-| Producer | Planning skill | Track tasks against gate dates; keep the risk register | Project plan, GDD, gate dates | Reads repo; edits plan docs only | Weekly plan update to me | Plan matches gates | Any scope or date change |
-| Designer | Design skill | Draft mechanics, stats and level layouts | GDD, playtest logs | Edits draft design docs only | Proposals to me, then to engineering | Proposals fit pillars and scope | Every design change |
-| Engineer | Coding agent in the repo | Build features | GDD, this document, codebase | Branches and tests; no push to main | Pull requests to QA | CI passes | I review and merge every PR |
-| QA | Test-writing skill plus CI | Write deterministic tests; run the evaluation harness | Rules, schema, evaluation cases | Test folder and CI only | Test reports to engineering and me | Coverage of rules and cases | New suites and gate runs |
-| Art assistant | Codex now; Gemini image generation planned | Draft concept art and fold frames | Look and Sound section | Drafts only | Options to me | Fits the style guide | I pick and finish every asset |
-| Commander (in game) | Gemini function-calling interface | Choose waves and boss moves | Summary only (see Context and memory) | One action per call; validated in code | Choice to the encounter director | Evaluation cases 1–8 | Prompt, schema and rule changes |
+| Producer / PM | `agent-team/agents/pm.md` | Track milestones, risks, weekly PPP, evidence, and handoff state | Project plan, GDD, gate dates, current handoff | `production/*` branches; production documents only | Status and decision requests to me | Status matches linked evidence and gates | Any scope, date, or gate decision |
+| Art / Design Lead | `agent-team/skills/art-design-lead/SKILL.md` | Turn evidence into visual, interaction, UI and level-readability briefs | GDD, playtest/QA evidence, current screenshots | `design/*` branches; proposal and concept paths only | Approved brief to Tech Lead | Acceptance criteria fit pillars, readability and scope | Every direction and final asset |
+| Tech Lead | `agent-team/agents/tech-lead.md` | Build approved features without changing design | GDD, this document, codebase, current handoff | `tech/*` branches; no push to main | Runnable build and dated handoff to QA | Build, unit, browser, and rule checks pass | I review and merge every PR |
+| Independent QA | `agent-team/agents/qa.md` | Test rules and the player-visible build independently | Rules, schema, evaluation cases, Tech handoff | Writes only under `tests/` | Evidence and accept/revise/cut recommendation | Coverage of rules, cases, and browser behavior | I make the final gate decision |
+| Commander (in game) | Gemini function-calling interface | Choose waves and boss moves | Summary only (see Context and memory) | One action per call; validated in code | Choice to the encounter director | Evaluation cases 1–9 | Prompt, schema and rule changes |
 
 ---
 

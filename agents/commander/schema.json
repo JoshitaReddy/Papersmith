@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CommanderAction",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "minions", "spawnPoint", "reason"],
+      "properties": {
+        "kind": { "const": "WAVE" },
+        "minions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": { "enum": ["mothling", "soot-mote"] }
+        },
+        "spawnPoint": { "type": "integer", "minimum": 0, "maximum": 2 },
+        "targetCraft": { "enum": ["ruler", "boat", "frog", "fan"] },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 160 }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "move", "target", "reason"],
+      "properties": {
+        "kind": { "const": "BOSS_MOVE" },
+        "move": { "enum": ["SWARM", "DIVE", "DUST_CLOUD"] },
+        "target": { "enum": ["player", "ruler", "boat", "frog", "fan"] },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 160 }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "move", "reason"],
+      "properties": {
+        "kind": { "const": "WARNING" },
+        "move": { "const": "DUST_CLOUD" },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 160 }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "reason"],
+      "properties": {
+        "kind": { "const": "WAIT" },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 160 }
+      }
+    }
+  ]
+}
